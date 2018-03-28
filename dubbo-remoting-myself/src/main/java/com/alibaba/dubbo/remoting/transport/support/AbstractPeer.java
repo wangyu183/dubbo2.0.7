@@ -1,6 +1,6 @@
 package com.alibaba.dubbo.remoting.transport.support;
 
-import java.net.InetSocketAddress;
+import java.io.IOException;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
@@ -48,7 +48,6 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
 
 
     public void reveived(Channel channel, Object message) throws RemotingException {
-        // TODO Auto-generated method stub
         if(closed) {
             return;
         }
@@ -57,47 +56,54 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
     }
 
     public void caught(Channel channel, Throwable exception) throws RemotingException {
-        // TODO Auto-generated method stub
+        if(exception instanceof IOException || exception instanceof RemotingException) {
+            logger.warn("IOException on channel " + channel, exception);
+        }else {
+            logger.error("Exception on channel " + channel,exception);
+        }
+        handler.caught(channel, exception);
 
+    }
+    
+    public void sent(Channel ch, Object msg) throws RemotingException {
+        if (closed) {
+            return;
+        }
+        handler.sent(ch, msg);
     }
 
     public URL getUrl() {
-        // TODO Auto-generated method stub
-        return null;
+        return url;
+    }
+    
+    protected void setUrl(URL url) {
+        if(url == null) {
+            throw new IllegalArgumentException("url == null");
+        }
+        this.url = url;
     }
 
     public ChannelHandler getChannelHandler() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    public InetSocketAddress getLocalAddress() {
-        // TODO Auto-generated method stub
-        return null;
+        return handler;
     }
 
     public void send(Object message) throws RemotingException {
         send(message,url.getBooleanParameter(Constants.SENT_KEY));
     }
 
-    public void send(Object message, boolean sent) throws RemotingException {
-        // TODO Auto-generated method stub
-
-    }
 
     public void close() {
-        // TODO Auto-generated method stub
+        closed = true;
 
     }
 
     public void close(int timeout) {
-        // TODO Auto-generated method stub
+        close();
 
     }
 
     public boolean isClosed() {
-        // TODO Auto-generated method stub
-        return false;
+        return closed;
     }
 
 }
