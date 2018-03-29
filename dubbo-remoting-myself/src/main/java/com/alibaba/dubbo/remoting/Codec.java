@@ -17,6 +17,8 @@ import com.alibaba.dubbo.common.Extension;
 @Extension
 public interface Codec {
     
+    Object NEED_MORE_INPUT = new Object();
+    
     @Adaptive({Constants.CODEC_KEY})
     void encode(Channel channel,OutputStream output,Object message) throws IOException;
     
