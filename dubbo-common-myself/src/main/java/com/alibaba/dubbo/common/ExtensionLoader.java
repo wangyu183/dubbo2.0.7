@@ -1,7 +1,6 @@
 package com.alibaba.dubbo.common;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.Arrays;
@@ -13,9 +12,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.ConcurrentHashSet;
 import com.alibaba.dubbo.common.utils.Reference;
 
 public class ExtensionLoader<T> {
+    
+    private static final Logger logger = LoggerFactory.getLogger(ExtensionLoader.class);
     
     private static final String SERVICES_DIRECTORY = "META-INF/services/";
     
@@ -111,6 +115,7 @@ public class ExtensionLoader<T> {
 	        if(names.length == 1) {
 	            cachedDefaultName = names[0];
 	        }
+	    }   
 	        ClassLoader classLoader = findClassLoader();
 	        Map<String,Class<?>> extensionClasses = new HashMap<String,Class<?>>();
 	        String fileName = null;
@@ -128,7 +133,8 @@ public class ExtensionLoader<T> {
     	                URL url = urls.nextElement();
     	                
     	                BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
-    	                
+    	                try {
+                            
     	                String line = null;
     	                while((line = reader.readLine()) != null) {
     	                    line = line.trim();
@@ -158,30 +164,47 @@ public class ExtensionLoader<T> {
                                                 cachedWrapperClasses = new ConcurrentHashSet<Class<?>>();
                                                 autoproxies = cachedWrapperClasses;
                                             }
+                                            autoproxies.add(clazz);
                                             
                                         } catch (NoSuchMethodException e) {
-                                            // TODO Auto-generated catch block
-                                            e.printStackTrace();
+                                            clazz.getConstructor();
+                                            Extension extension = clazz.getAnnotation(Extension.class);
+                                            if (extension == null) {
+                                                throw new IllegalStateException("No such @Extension annotation in class " + type.getName());
+                                            }
+                                            String name = extension.value();
+                                            if (name == null || name.length() == 0) {
+                                                throw new IllegalStateException("Illegal @Extension annotation in class " + type.getName());
+                                            }
+                                            String[] names = NAME_SEPARATOR.split(name);
+                                            for(String n : names) {
+                                                Class<?> c = extensionClasses.get(n);
+                                                if(c == null) {
+                                                    extensionClasses.put(n, clazz);
+                                                }else if(c != clazz) {
+                                                    throw new IllegalStateException("Duplicate extension " + type.getName() + " name " + n + " on " + c.getName() + " and " + clazz.getName());
+                                                }
+                                            }
                                         } catch (SecurityException e) {
-                                            // TODO Auto-generated catch block
                                             e.printStackTrace();
                                         }
                                     }
     	                        } catch (ClassNotFoundException e) {
-                                    // TODO Auto-generated catch block
                                     e.printStackTrace();
                                 }
     	                    }
     	                }
+    	                } 
+    	                finally {
+    	                    reader.close();
+    	                }
     	            }
     	        }
 	        }
-	        catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+	        catch (Throwable t) {
+	            logger.error("Exception when load extension class(interface: " +
+	                    type + ", description file: " + fileName + ").", t);
             }
-	    }
-	    
 	    
 	    return null;
 	}
