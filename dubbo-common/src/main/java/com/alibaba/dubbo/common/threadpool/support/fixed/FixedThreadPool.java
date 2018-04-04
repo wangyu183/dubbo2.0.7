@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.Extension;
+import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.threadpool.ThreadPool;
 import com.alibaba.dubbo.common.threadpool.support.AbortPolicyWithReport;
@@ -36,7 +37,9 @@ import com.alibaba.dubbo.common.utils.NamedThreadFactory;
  */
 @Extension("fixed")
 public class FixedThreadPool implements ThreadPool {
-
+    
+    public Object obj = new Object();
+    
     public Executor getExecutor(URL url) {
         String threadName = url.getParameter(Constants.THREAD_NAME_KEY, Constants.DEFAULT_THREAD_NAME);
         int threads = url.getIntParameter(Constants.THREADS_KEY, Constants.DEFAULT_THREADS);
@@ -44,6 +47,26 @@ public class FixedThreadPool implements ThreadPool {
         return new ThreadPoolExecutor(threads, threads, Constants.DEFAULT_THREAD_ALIVE, TimeUnit.MILLISECONDS, 
                                       queues <= 0 ? new SynchronousQueue<Runnable>() : new LinkedBlockingQueue<Runnable>(queues),
                                new NamedThreadFactory(threadName, true), new AbortPolicyWithReport(threadName, url));
+    }
+    
+    @Override
+    public void finalize() {
+        System.out.println("abc");
+    }
+    
+    public static void main(String[] args) {
+        ThreadPool threadPool =  ExtensionLoader.getExtensionLoader(ThreadPool.class).getAdaptiveExtension();
+//        FixedThreadPool pool = new FixedThreadPool();
+//        Object xxx =  pool.obj;
+//        System.out.println(xxx);
+//        pool = null;
+//        System.out.println(xxx);
+//        Runtime.getRuntime().gc();
+//        try {
+//            Thread.currentThread().sleep(5000);
+//        } catch (InterruptedException e) {
+//        }
+//        System.out.println(xxx);
     }
 
 }
