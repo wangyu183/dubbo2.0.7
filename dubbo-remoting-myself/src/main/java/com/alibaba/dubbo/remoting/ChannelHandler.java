@@ -8,7 +8,7 @@ public interface ChannelHandler {
     
     void sent(Channel channel,Object message) throws RemotingException;
     
-    void reveived(Channel channel,Object message) throws RemotingException;
+    void received(Channel channel,Object message) throws RemotingException;
     
     void caught(Channel channel,Throwable exception) throws RemotingException;
     
