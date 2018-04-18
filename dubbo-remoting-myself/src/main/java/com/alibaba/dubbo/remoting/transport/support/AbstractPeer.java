@@ -47,7 +47,7 @@ public abstract class AbstractPeer implements Endpoint, ChannelHandler {
     }
 
 
-    public void reveived(Channel channel, Object message) throws RemotingException {
+    public void received(Channel channel, Object message) throws RemotingException {
         if(closed) {
             return;
         }
