@@ -33,6 +33,10 @@ public class NettyHandler extends SimpleChannelHandler {
         this.url = url;
         this.handler = handler;
     }
+    
+    public Map<String,Channel> getChannels(){
+        return channels;
+    }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
