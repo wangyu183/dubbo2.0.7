@@ -85,6 +85,10 @@ protected static final String CLIENT_THREAD_POOL_NAME  ="DubboClientHandler";
         }
         return channel.getLocalAddress();
     }
+    
+    public InetSocketAddress getConnectAddress() {
+        return new InetSocketAddress(NetUtils.filterLocalHost(getUrl().getHost()), getUrl().getPort());
+    }
 
     public void send(Object message, boolean sent) throws RemotingException {
         if(send_reconnect && !isConnected()) {

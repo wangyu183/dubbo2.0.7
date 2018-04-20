@@ -1,6 +1,7 @@
 package com.alibaba.dubbo.common.utils;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.util.Enumeration;
 import java.util.Random;
@@ -103,5 +104,24 @@ public class NetUtils {
                 && IP_PATTERN.matcher(name).matches());
     }
     
+    public static String toAddressString(InetSocketAddress address) {
+        return address.getAddress().getHostAddress() + ":" + address.getPort();
+    }
+    
+    public static String filterLocalHost(String host) {
+        if (NetUtils.isInvalidLocalHost(host)) {
+            return NetUtils.getLocalHost();
+        }
+        return host;
+    }
+    
+    private static final Pattern LOCAL_IP_PATTERN = Pattern.compile("127(\\.\\d{1,3}){3}$");
+    public static boolean isInvalidLocalHost(String host) {
+        return host == null 
+                    || host.length() == 0
+                    || host.equalsIgnoreCase("localhost")
+                    || host.equals("0.0.0.0")
+                    || (LOCAL_IP_PATTERN.matcher(host).matches());
+    }
     
 }

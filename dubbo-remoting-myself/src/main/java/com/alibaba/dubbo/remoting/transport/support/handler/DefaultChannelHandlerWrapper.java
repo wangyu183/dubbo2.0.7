@@ -3,7 +3,7 @@ package com.alibaba.dubbo.remoting.transport.support.handler;
 import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.ChannelHandler;
-import com.alibaba.dubbo.remoting.transport.support.ChannelHandlerWrapper;
+import com.alibaba.dubbo.remoting.ChannelHandlerWrapper;
 
 @Extension(DefaultChannelHandlerWrapper.NAME)
 public class DefaultChannelHandlerWrapper implements ChannelHandlerWrapper {
