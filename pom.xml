@@ -37,7 +37,8 @@
 		<module>dubbo</module>
 		<module>dubbo-remoting-myself</module>
     	<module>dubbo-common-myself</module>
-  </modules>
+    	<module>dubbo-rpc-myself</module>
+	</modules>
 	<properties>
 		<!-- Common libs -->
 		<spring_version>2.5.6.SEC03</spring_version>
