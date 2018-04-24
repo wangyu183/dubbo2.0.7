@@ -152,6 +152,28 @@ public class ExtensionLoader<T> {
         }
 	}
 	
+	public boolean hasExtension(String name) {
+	    if(name == null || name.length() == 0 ) {
+	        throw new IllegalArgumentException("Extension name == null");
+	    }
+	    try {
+            return getExtensionClass(name) != null;
+        } catch (Exception e) {
+            return false;
+        }
+	        
+	}
+	
+	private Class<?> getExtensionClass(String name) {
+        if (type == null)
+            throw new IllegalArgumentException("Extension type == null");
+        if (name == null)
+            throw new IllegalArgumentException("Extension name == null");
+        Class<?> clazz = getExtensionClasses().get(name);
+        if (clazz == null)
+            throw new IllegalStateException("No such extension \"" + name + "\" for " + type.getName() + "!");
+        return clazz;
+    }
 	
 	private Map<String,Class<?>> getExtensionClasses(){
 	    Map<String,Class<?>> classes = cachedClasses.get();
