@@ -5,8 +5,9 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.Extension;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.remoting.RemotingException;
+import com.alibaba.dubbo.remoting.exchange.support.header.HeaderExchanger;
 
-@Extension()
+@Extension(HeaderExchanger.NAME)
 public interface Exchanger {
     
     @Adaptive({Constants.EXCHANGER_KEY})

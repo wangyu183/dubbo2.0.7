@@ -19,6 +19,8 @@ import com.alibaba.dubbo.remoting.exchange.support.DefaultFuture;
 public final class HeaderExchangeChannel implements ExchangeChannel {
     private static final Logger logger      = LoggerFactory.getLogger(HeaderExchangeChannel.class);
     
+    private static final String CHANNEL_KEY = HeaderExchangeChannel.class.getName() + ".CHANNEL";
+    
     private final Channel channel;
     
     private volatile boolean closed = false;
@@ -29,6 +31,26 @@ public final class HeaderExchangeChannel implements ExchangeChannel {
         }
         this.channel = channel;
     }
+     
+     static HeaderExchangeChannel getOrAddChannel(Channel ch) {
+         if (ch == null) {
+             return null;
+         }
+         HeaderExchangeChannel ret = (HeaderExchangeChannel) ch.getAttribute(CHANNEL_KEY);
+         if (ret == null) {
+             ret = new HeaderExchangeChannel(ch);
+             if (ch.isConnected()) {
+                 ch.setAttribute(CHANNEL_KEY, ret);
+             }
+         }
+         return ret;
+     }
+     
+     static void removeChannelIfDisconnected(Channel ch) {
+         if (ch != null && ! ch.isConnected()) {
+             ch.removeAttribute(CHANNEL_KEY);
+         }
+     }
     
     public InetSocketAddress getRemoteAddress() {
         return channel.getRemoteAddress();
@@ -124,12 +146,52 @@ public final class HeaderExchangeChannel implements ExchangeChannel {
     }
 
     public void close(int timeout) {
-        // TODO Auto-generated method stub
-
+        if(closed) {
+            return;
+        }
+        closed = true;
+        if(timeout > 0) {
+            long start = System.currentTimeMillis();
+            while(DefaultFuture.hasFuture(HeaderExchangeChannel.this)
+                    && System.currentTimeMillis() - start < timeout) {
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    logger.warn(e.getMessage(), e);
+                }   
+            }
+        }
+        close();
     }
+    
 
     public ExchangeHandler getExchangeHandler() {
         return (ExchangeHandler) channel.getChannelHandler();
+    }
+    
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((channel == null) ? 0 : channel.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        HeaderExchangeChannel other = (HeaderExchangeChannel) obj;
+        if (channel == null) {
+            if (other.channel != null) return false;
+        } else if (!channel.equals(other.channel)) return false;
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return channel.toString();
     }
 
 }
