@@ -5,6 +5,7 @@ import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.Version;
 import com.alibaba.dubbo.remoting.RemotingException;
+import com.alibaba.dubbo.remoting.exchange.support.Replier;
 
 public class Exchangers {
     
@@ -12,6 +13,10 @@ public class Exchangers {
     
     static {
         Version.checkDuplicate(Exchangers.class);
+    }
+    
+    public static ExchangeServer bind(String url, Replier<?> replier) throws RemotingException{
+        
     }
     
     public static ExchangeServer bind(URL url, ExchangeHandler handler) throws RemotingException {
