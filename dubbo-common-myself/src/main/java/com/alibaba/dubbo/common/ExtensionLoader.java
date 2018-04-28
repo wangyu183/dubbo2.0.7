@@ -6,10 +6,12 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
@@ -187,6 +189,11 @@ public class ExtensionLoader<T> {
             }
 	    }
 	    return classes;
+	}
+	
+	public Set<String> getSupportedExtensions(){
+	    Map<String,Class<?>> clazzes = getExtensionClasses();
+	    return Collections.unmodifiableSet(new TreeSet<String>(clazzes.keySet()));
 	}
 	
 	private Map<String,Class<?>> loadExtensionClasses(){

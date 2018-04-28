@@ -4,6 +4,7 @@ import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.dubbo.common.Constants;
@@ -17,6 +18,7 @@ import com.alibaba.dubbo.remoting.Transporter;
 import com.alibaba.dubbo.remoting.exchange.ExchangeChannel;
 import com.alibaba.dubbo.remoting.exchange.ExchangeHandler;
 import com.alibaba.dubbo.remoting.exchange.ExchangeServer;
+import com.alibaba.dubbo.remoting.exchange.Exchangers;
 import com.alibaba.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
 import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.Invocation;
@@ -191,8 +193,10 @@ public class DubboProtocol extends AbstractProtocol {
         String key = url.getAddress();
         boolean isServer = url.getBooleanParameter(RpcConstants.IS_SERVER_KEY, true);
         if(isServer && !serverMap.containsKey(key)) {
-            serverMap.put(key, value);
+            serverMap.put(key, initServer(url));
         }
+        key = serviceKey(url);
+        //TODO
         return null;
     }
     
@@ -204,10 +208,18 @@ public class DubboProtocol extends AbstractProtocol {
         url = url.addParameter(Constants.CODEC_KEY, Version.isCompatibleVersion() ? COMPATIBLE_CODEC_NAME : DubboCodec.NAME);
         ExchangeServer server;
         try {
-            
+            server = Exchangers.bind(url, requestHandler);
         } catch (RemotingException e) {
             throw new RpcException(e.getMessage(),e);
         }
+        str = url.getParameter(Constants.CLIENT_KEY);
+        if(str != null && str.length() > 0) {
+            Set<String> supportedTypes = ExtensionLoader.getExtensionLoader(Transporter.class).getSupportedExtensions();
+            if(! supportedTypes.contains(str)) {
+                throw new RpcException("Unsupported client type: " + str);
+            }
+        }
+        return server;
     }
 
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
