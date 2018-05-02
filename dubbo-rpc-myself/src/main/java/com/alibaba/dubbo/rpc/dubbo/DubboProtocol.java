@@ -238,14 +238,15 @@ public class DubboProtocol extends AbstractProtocol {
         }
         return server;
     }
-
-    public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
+  
+    public <T> Invoker<T> refer(Class<T> serviceType, URL url) throws RpcException {
         int channels = url.getPositiveIntParameter(Constants.CONNECTIONS_KEY, 1);
         ExchangeClient[] clients = new ExchangeClient[channels];
         for(int i = 0; i < clients.length; i++) {
-            clients[i] = 
+            clients[i] = initClient(url);
         }
-    }
+        DubboInvoker<T> invoker = new DubboInvoker<T>();
+    }vv
     
     private ExchangeClient initClient(URL url) {
         String str = url.getParameter(Constants.CLIENT_KEY, url.getParameter(Constants.SERVER_KEY, Constants.DEFAULT_REMOTING_CLIENT));
