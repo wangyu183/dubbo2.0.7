@@ -12,10 +12,12 @@ import com.alibaba.dubbo.common.ExtensionLoader;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.Version;
 import com.alibaba.dubbo.common.utils.NetUtils;
+import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.Transporter;
 import com.alibaba.dubbo.remoting.exchange.ExchangeChannel;
+import com.alibaba.dubbo.remoting.exchange.ExchangeClient;
 import com.alibaba.dubbo.remoting.exchange.ExchangeHandler;
 import com.alibaba.dubbo.remoting.exchange.ExchangeServer;
 import com.alibaba.dubbo.remoting.exchange.Exchangers;
@@ -196,8 +198,23 @@ public class DubboProtocol extends AbstractProtocol {
             serverMap.put(key, initServer(url));
         }
         key = serviceKey(url);
-        //TODO
-        return null;
+        DubboExporter<T> exporter = new DubboExporter<T>(invoker,key,exporterMap);
+        exporterMap.put(key, exporter);
+        
+        //export an stub service for dispaching event
+        Boolean isStubSupportEvent = url.getBooleanParameter(RpcConstants.STUB_EVENT_KEY,RpcConstants.DEFAULT_STUB_EVENT);
+        Boolean isCallbackservice = url.getBooleanParameter(RpcConstants.IS_CALLBACK_SERVICE);
+        if (isStubSupportEvent && !isCallbackservice){
+            String stubServiceMethods = url.getParameter(RpcConstants.STUB_EVENT_METHODS_KEY);
+            if (stubServiceMethods == null || stubServiceMethods.length() == 0 ){
+                if (logger.isWarnEnabled()){
+                    logger.warn( new IllegalStateException("consumer ["+url.getParameter(Constants.INTERFACE_KEY)+"], has set stubproxy support event ,but no stub methods founded."));
+                }
+            } else {
+                stubServiceMethodsMap.put(url.getServiceKey(), stubServiceMethods);
+            }
+        }
+        return exporter;
     }
     
     private ExchangeServer initServer(URL url) {
@@ -223,8 +240,30 @@ public class DubboProtocol extends AbstractProtocol {
     }
 
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
-        // TODO Auto-generated method stub
-        return null;
+        int channels = url.getPositiveIntParameter(Constants.CONNECTIONS_KEY, 1);
+        ExchangeClient[] clients = new ExchangeClient[channels];
+        for(int i = 0; i < clients.length; i++) {
+            clients[i] = 
+        }
+    }
+    
+    private ExchangeClient initClient(URL url) {
+        String str = url.getParameter(Constants.CLIENT_KEY, url.getParameter(Constants.SERVER_KEY, Constants.DEFAULT_REMOTING_CLIENT));
+        String version = url.getParameter(Constants.DUBBO_VERSION_KEY);
+        boolean compatible = (version != null && version.startsWith("1.0."));
+        url = url.addParameter(Constants.CODEC_KEY, Version.isCompatibleVersion() && compatible ? COMPATIBLE_CODEC_NAME : DubboCodec.NAME);
+        if (str != null && str.length() > 0 && ! ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(str)) {
+            throw new RpcException("Unsupported client type: " + str + "," +
+                    " supported client type is " + StringUtils.join(ExtensionLoader.getExtensionLoader(Transporter.class).getSupportedExtensions(), " "));
+        }
+        if(url.getBooleanParameter(RpcConstants.LAZY_CONNECT_KEY)) {
+            return new LazyConnectExchangeClient(url, requestHandler);
+        }
+        try {
+            return Exchangers.connect(url,requestHandler);
+        } catch (RemotingException e) {
+            throw new RpcException(e.getMessage(), e);
+        }
     }
 
 }
