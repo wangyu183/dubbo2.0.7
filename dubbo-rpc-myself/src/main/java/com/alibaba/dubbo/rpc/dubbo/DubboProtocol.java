@@ -1,6 +1,7 @@
 package com.alibaba.dubbo.rpc.dubbo;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -245,8 +246,10 @@ public class DubboProtocol extends AbstractProtocol {
         for(int i = 0; i < clients.length; i++) {
             clients[i] = initClient(url);
         }
-        DubboInvoker<T> invoker = new DubboInvoker<T>();
-    }vv
+        DubboInvoker<T> invoker = new DubboInvoker<T>(serviceType, url, clients);
+        invokers.add(invoker);
+        return invoker;
+    }
     
     private ExchangeClient initClient(URL url) {
         String str = url.getParameter(Constants.CLIENT_KEY, url.getParameter(Constants.SERVER_KEY, Constants.DEFAULT_REMOTING_CLIENT));
@@ -266,5 +269,22 @@ public class DubboProtocol extends AbstractProtocol {
             throw new RpcException(e.getMessage(), e);
         }
     }
-
+    
+    public void destroy() {
+        super.destory();
+        for (String key : new ArrayList<String>(serverMap.keySet())) {
+            ExchangeServer server = serverMap.remove(key);
+            if (server != null) {
+                try {
+                    if (logger.isInfoEnabled()) {
+                        logger.info("Close dubbo server: " + server.getLocalAddress());
+                    }
+                    server.close(getServerShutdownTimeout());
+                } catch (Throwable t) {
+                    logger.warn(t.getMessage(), t);
+                }
+            }
+        }
+        stubServiceMethodsMap.clear();
+    } 
 }
