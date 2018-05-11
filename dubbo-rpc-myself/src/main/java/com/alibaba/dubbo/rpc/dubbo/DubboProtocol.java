@@ -139,7 +139,6 @@ public class DubboProtocol extends AbstractProtocol {
                 try {
                     received(channel, invocation);
                 } catch (Throwable t) {
-                    // TODO: handle exception
                     logger.warn("Failed to invoke event method " + invocation.getMethodName() + "(), cause: " + t.getMessage(), t);
                 }
             }

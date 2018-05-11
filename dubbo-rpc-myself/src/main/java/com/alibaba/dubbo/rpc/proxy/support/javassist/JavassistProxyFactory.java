@@ -11,7 +11,7 @@ import com.alibaba.dubbo.rpc.proxy.support.InvokerHandler;
 import com.alibaba.dubbo.rpc.proxy.support.InvokerWrapper;
 
 @Extension("javassist")
-public class JavassistProxy implements ProxyFactory {
+public class JavassistProxyFactory implements ProxyFactory {
     
     /**
      * Proxy.getProxy(interfaces) 生成的是创建代理对象的代理
