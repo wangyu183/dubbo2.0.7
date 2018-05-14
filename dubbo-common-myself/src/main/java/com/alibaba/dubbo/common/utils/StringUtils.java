@@ -2,7 +2,9 @@ package com.alibaba.dubbo.common.utils;
 
 import java.io.PrintWriter;
 import java.util.Collection;
+import java.util.Map;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.io.UnsafeStringWriter;
 
 public final class StringUtils {
@@ -88,5 +90,19 @@ public final class StringUtils {
         }
         return sb.toString();
         
+    }
+    
+    public static String getServiceKey(Map<String, String> ps) {
+        StringBuilder buf = new StringBuilder();
+        String group = ps.get(Constants.GROUP_KEY);
+        if (group != null && group.length()>0){
+            buf.append(group).append("/");
+        }
+        buf.append(ps.get(Constants.INTERFACE_KEY));
+        String version = ps.get(Constants.VERSION_KEY);
+        if (version!= null && version.length()>0){
+            buf.append(":").append(version);
+        }
+        return buf.toString();
     }
 }
