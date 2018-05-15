@@ -47,4 +47,20 @@ public class ConfigUtils {
         }
         return names;
     }
+    
+    public static boolean isNotEmpty(String value) {
+        return !isEmpty(value);
+    }
+    
+    public static boolean isEmpty(String value) {
+        return value == null || value.length() == 0
+                || "null".equalsIgnoreCase(value)
+                || "false".equalsIgnoreCase(value)
+                || "N/A".equalsIgnoreCase(value);
+    }
+    
+    public static boolean isDefault(String value) {
+        return "true".equalsIgnoreCase(value)
+                || "default".equalsIgnoreCase(value);
+    }
 }
