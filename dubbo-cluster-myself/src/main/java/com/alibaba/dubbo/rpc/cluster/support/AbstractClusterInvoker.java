@@ -43,7 +43,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
     }
     
     public Class<T> getInterface() {
-        return null;
+        return directory.getInterface();
     }
     
 
