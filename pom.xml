@@ -39,6 +39,7 @@
     	<module>dubbo-common-myself</module>
     	<module>dubbo-rpc-myself</module>
     	<module>dubbo-cluster-myself</module>
+    	<module>dubbo-registry-myself</module>
   </modules>
 	<properties>
 		<!-- Common libs -->
